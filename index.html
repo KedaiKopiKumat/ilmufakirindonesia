@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Jodoh</title>
+    <title>Cek Jodoh - Edukasi Keamanan</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,14 +26,30 @@
             width: 100%;
         }
     </style>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
     <div class="container" id="loginContainer">
         <h2>Silakan Login</h2>
         <p>Anda harus login terlebih dahulu untuk cek jodoh.</p>
-        <button onclick="loginGoogle()">Login dengan Google</button>
+        <div id="g_id_onload"
+            data-client_id="YOUR_GOOGLE_CLIENT_ID"
+            data-callback="handleGoogleLogin">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
         <button onclick="loginFacebook()">Login dengan Facebook</button>
+        <button onclick="showFakeLogin()">Simulasi Login Palsu</button>
+    </div>
+    
+    <div class="container" id="fakeLoginContainer" style="display:none;">
+        <h2>Login Akun</h2>
+        <input type="text" id="fakeUser" placeholder="Email atau Username">
+        <input type="password" id="fakePass" placeholder="Password">
+        <button onclick="fakeLogin()">Login</button>
+    </div>
+    
+    <div class="container" id="warningContainer" style="display:none;">
+        <h2>Hati-hati!</h2>
+        <p>Bayangkan jika ini adalah website jahat, data login kamu bisa dicuri!</p>
     </div>
     
     <div class="container" id="cekJodohContainer" style="display:none;">
@@ -47,59 +65,61 @@
     </div>
 
     <script>
-        let userLoggedIn = false;
-        let userName = "";
-
-        function loginGoogle() {
-            userName = "User Google"; // Simulasi login Google
-            userLoggedIn = true;
+        function handleGoogleLogin(response) {
+            const credential = JSON.parse(atob(response.credential.split('.')[1]));
+            alert("Login sukses sebagai: " + credential.email);
             showCekJodoh();
         }
-
+        
         function loginFacebook() {
-            userName = "User Facebook"; // Simulasi login Facebook
-            userLoggedIn = true;
-            showCekJodoh();
+            FB.login(response => {
+                if (response.authResponse) {
+                    FB.api('/me', { fields: 'name,email' }, user => {
+                        alert("Login sukses sebagai: " + user.email);
+                        showCekJodoh();
+                    });
+                }
+            }, { scope: 'email' });
         }
-
-        function showCekJodoh() {
-            if (userLoggedIn) {
-                document.getElementById("loginContainer").style.display = "none";
-                document.getElementById("cekJodohContainer").style.display = "block";
-                console.log("User login dengan: " + userName);
+        
+        function showFakeLogin() {
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("fakeLoginContainer").style.display = "block";
+        }
+        
+        function fakeLogin() {
+            let username = document.getElementById("fakeUser").value;
+            let password = document.getElementById("fakePass").value;
+            if (username && password) {
+                document.getElementById("fakeLoginContainer").style.display = "none";
+                document.getElementById("warningContainer").style.display = "block";
             }
         }
-
+        
+        function showCekJodoh() {
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("cekJodohContainer").style.display = "block";
+        }
+        
         function cekJodoh() {
             let namaAnda = document.getElementById("namaAnda").value.trim();
             let tglAnda = document.getElementById("tglLahirAnda").value;
             let namaPasangan = document.getElementById("namaPasangan").value.trim();
             let tglPasangan = document.getElementById("tglLahirPasangan").value;
             let hasilElement = document.getElementById("hasil");
-
             if (!namaAnda || !tglAnda || !namaPasangan || !tglPasangan) {
                 hasilElement.innerText = "Harap isi semua data!";
                 return;
             }
-
             hasilElement.innerText = "Sedang menghitung kecocokan...";
             setTimeout(() => {
                 let skor = (namaAnda.length + namaPasangan.length + 
                             parseInt(tglAnda.replaceAll('-', '')) + 
                             parseInt(tglPasangan.replaceAll('-', ''))) % 100;
-                let pesan = "";
-
-                if (skor > 80) {
-                    pesan = "Kalian pasangan yang sangat cocok!";
-                } else if (skor > 60) {
-                    pesan = "Ada kecocokan, tapi perlu saling memahami.";
-                } else if (skor > 40) {
-                    pesan = "Banyak perbedaan, tapi masih bisa diusahakan.";
-                } else {
-                    pesan = "Kecocokan rendah, tapi cinta bisa mengubah segalanya!";
-                }
+                let pesan = skor > 80 ? "Pasangan sangat cocok!" :
+                            skor > 60 ? "Perlu usaha untuk memahami." :
+                            skor > 40 ? "Banyak perbedaan, tapi bisa diusahakan." : "Kecocokan rendah, tapi cinta bisa mengubah segalanya!";
                 hasilElement.innerText = `Skor Kecocokan: ${skor}% - ${pesan}`;
-                console.log("Cek jodoh dilakukan oleh: " + userName);
             }, 2000);
         }
     </script>
