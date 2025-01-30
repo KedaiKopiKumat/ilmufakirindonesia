@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Jodoh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+    </style>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+    <div class="container" id="loginContainer">
+        <h2>Silakan Login</h2>
+        <p>Anda harus login terlebih dahulu untuk cek jodoh.</p>
+        <button onclick="loginGoogle()">Login dengan Google</button>
+        <button onclick="loginFacebook()">Login dengan Facebook</button>
+    </div>
+    
+    <div class="container" id="cekJodohContainer" style="display:none;">
+        <h2>Cek Jodoh</h2>
+        <p>Masukkan nama dan tanggal lahir Anda:</p>
+        <input type="text" id="namaAnda" placeholder="Nama Anda">
+        <input type="date" id="tglLahirAnda">
+        <p>Masukkan nama dan tanggal lahir pasangan:</p>
+        <input type="text" id="namaPasangan" placeholder="Nama Pasangan">
+        <input type="date" id="tglLahirPasangan">
+        <button onclick="cekJodoh()">Cek Jodoh</button>
+        <h3 id="hasil"></h3>
+    </div>
+
+    <script>
+        let userLoggedIn = false;
+        let userName = "";
+
+        function loginGoogle() {
+            userName = "User Google"; // Simulasi login Google
+            userLoggedIn = true;
+            showCekJodoh();
+        }
+
+        function loginFacebook() {
+            userName = "User Facebook"; // Simulasi login Facebook
+            userLoggedIn = true;
+            showCekJodoh();
+        }
+
+        function showCekJodoh() {
+            if (userLoggedIn) {
+                document.getElementById("loginContainer").style.display = "none";
+                document.getElementById("cekJodohContainer").style.display = "block";
+                console.log("User login dengan: " + userName);
+            }
+        }
+
+        function cekJodoh() {
+            let namaAnda = document.getElementById("namaAnda").value.trim();
+            let tglAnda = document.getElementById("tglLahirAnda").value;
+            let namaPasangan = document.getElementById("namaPasangan").value.trim();
+            let tglPasangan = document.getElementById("tglLahirPasangan").value;
+            let hasilElement = document.getElementById("hasil");
+
+            if (!namaAnda || !tglAnda || !namaPasangan || !tglPasangan) {
+                hasilElement.innerText = "Harap isi semua data!";
+                return;
+            }
+
+            hasilElement.innerText = "Sedang menghitung kecocokan...";
+            setTimeout(() => {
+                let skor = (namaAnda.length + namaPasangan.length + 
+                            parseInt(tglAnda.replaceAll('-', '')) + 
+                            parseInt(tglPasangan.replaceAll('-', ''))) % 100;
+                let pesan = "";
+
+                if (skor > 80) {
+                    pesan = "Kalian pasangan yang sangat cocok!";
+                } else if (skor > 60) {
+                    pesan = "Ada kecocokan, tapi perlu saling memahami.";
+                } else if (skor > 40) {
+                    pesan = "Banyak perbedaan, tapi masih bisa diusahakan.";
+                } else {
+                    pesan = "Kecocokan rendah, tapi cinta bisa mengubah segalanya!";
+                }
+                hasilElement.innerText = `Skor Kecocokan: ${skor}% - ${pesan}`;
+                console.log("Cek jodoh dilakukan oleh: " + userName);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
